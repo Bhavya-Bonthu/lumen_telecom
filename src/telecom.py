@@ -59,3 +59,40 @@ def df_from_cursor(cur):
         df.rename(columns={"_id": "ID"}, inplace=True)
         df["ID"] = df["ID"].astype(str)
     return df
+def get_users_df():
+    return df_from_cursor(COL_USERS.find({}))
+
+def get_products_df():
+    return df_from_cursor(COL_PRODUCTS.find({}))
+
+def get_suppliers_df():
+    return df_from_cursor(COL_SUPPLIERS.find({}))
+
+def get_orders_df():
+    return df_from_cursor(COL_ORDERS.find({}))
+
+def get_notifications_df():
+    return df_from_cursor(COL_NOTIFICATIONS.find({}).sort("Created_At", -1))
+
+def ensure_indexes():
+    COL_USERS.create_index("Username", unique=True)
+    COL_PRODUCTS.create_index([("Name", 1), ("Category", 1)], unique=False)
+    COL_SUPPLIERS.create_index("Name", unique=False)
+    COL_ORDERS.create_index("Order_Date")
+ensure_indexes()
+
+def seed_minimum_admin():
+    if COL_USERS.count_documents({}) == 0:
+        COL_USERS.insert_one({
+            "Username": "admin",
+            "Password": hash_password("admin123"),
+            "Role": "Admin"
+        })
+seed_minimum_admin()
+
+def post_notification(product_id: str, message: str):
+    COL_NOTIFICATIONS.insert_one({
+        "Product_ID": product_id,
+        "Message": message,
+        "Created_At": dt.datetime.utcnow()
+    })
