@@ -41,3 +41,21 @@ COL_PRODUCTS = db["Products"]
 COL_SUPPLIERS = db["Suppliers"]
 COL_ORDERS = db["Orders"]
 COL_NOTIFICATIONS = db["Notifications"]
+# ==============================
+# UTILS
+# ==============================
+def hash_password(pw: str) -> str:
+    return hashlib.sha256(pw.encode()).hexdigest()
+
+def check_password(pw: str, hashed: str) -> bool:
+    return hash_password(pw) == hashed
+
+def df_from_cursor(cur):
+    data = list(cur)
+    if not data:
+        return pd.DataFrame()
+    df = pd.DataFrame(data)
+    if "_id" in df.columns:
+        df.rename(columns={"_id": "ID"}, inplace=True)
+        df["ID"] = df["ID"].astype(str)
+    return df
